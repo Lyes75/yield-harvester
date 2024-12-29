@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { YieldTable, type YieldData } from "@/components/YieldTable";
 import { Filters } from "@/components/Filters";
 import { fetchYieldData } from "@/lib/utils";
@@ -13,19 +13,24 @@ const Index = () => {
     queryKey: ["yieldData"],
     queryFn: fetchYieldData,
     refetchInterval: 43200000, // 12 hours
+    staleTime: 3600000, // 1 hour
   });
 
-  // Explicitly type the chains array as string[]
-  const chains = Array.from(
-    new Set((yieldData as YieldData[]).map((item) => item.chain))
-  );
+  // Memoize chains array to prevent unnecessary recalculations
+  const chains = useMemo(() => {
+    const uniqueChains = new Set(yieldData.map((item: YieldData) => item.chain));
+    return Array.from(uniqueChains);
+  }, [yieldData]);
 
-  const filteredData = (yieldData as YieldData[]).filter((item) => {
-    const chainMatch = selectedChain === "all" || item.chain === selectedChain;
-    const apyMatch = item.apy >= apyRange[0] && item.apy <= apyRange[1];
-    const tvlMatch = item.tvl >= tvlRange[0] && item.tvl <= tvlRange[1];
-    return chainMatch && apyMatch && tvlMatch;
-  });
+  // Memoize filtered data to prevent infinite loops
+  const filteredData = useMemo(() => {
+    return (yieldData as YieldData[]).filter((item) => {
+      const chainMatch = selectedChain === "all" || item.chain === selectedChain;
+      const apyMatch = item.apy >= apyRange[0] && item.apy <= apyRange[1];
+      const tvlMatch = item.tvl >= tvlRange[0] && item.tvl <= tvlRange[1];
+      return chainMatch && apyMatch && tvlMatch;
+    });
+  }, [yieldData, selectedChain, apyRange, tvlRange]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A1F2C] to-[#2A2F3C] py-8 font-inter">
