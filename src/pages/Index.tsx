@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { YieldTable, type YieldData } from "@/components/YieldTable";
 import { Filters } from "@/components/Filters";
 import { fetchYieldData } from "@/lib/utils";
@@ -15,9 +15,12 @@ const Index = () => {
     refetchInterval: 43200000, // 12 hours
   });
 
-  const chains = Array.from(new Set(yieldData.map((item: YieldData) => item.chain)));
+  // Explicitly type the chains array as string[]
+  const chains = Array.from(
+    new Set((yieldData as YieldData[]).map((item) => item.chain))
+  );
 
-  const filteredData = yieldData.filter((item: YieldData) => {
+  const filteredData = (yieldData as YieldData[]).filter((item) => {
     const chainMatch = selectedChain === "all" || item.chain === selectedChain;
     const apyMatch = item.apy >= apyRange[0] && item.apy <= apyRange[1];
     const tvlMatch = item.tvl >= tvlRange[0] && item.tvl <= tvlRange[1];
