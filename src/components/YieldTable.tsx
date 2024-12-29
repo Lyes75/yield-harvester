@@ -32,18 +32,16 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
     direction: "asc" | "desc";
   }>({ key: "tvl", direction: "desc" });
 
-  const sortedData = useMemo(() => {
-    if (!Array.isArray(data) || data.length === 0) return [];
-    
-    const safeSort = (a: YieldData, b: YieldData): number => {
+  // Memoize the sorting function itself to prevent recreation on every render
+  const sortFunction = useMemo(() => {
+    return (a: YieldData, b: YieldData): number => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
-      // If both values are null/undefined, consider them equal
+      // Handle null/undefined values
       if (aValue == null && bValue == null) return 0;
-      // If only one value is null/undefined, sort it last
-      if (aValue == null) return sortConfig.direction === "asc" ? 1 : -1;
-      if (bValue == null) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
 
       // Handle numeric values
       if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -59,15 +57,20 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
 
       return 0;
     };
+  }, [sortConfig.key, sortConfig.direction]);
 
-    return [...data].sort(safeSort);
-  }, [data, sortConfig.key, sortConfig.direction]);
+  // Memoize the sorted data using the memoized sort function
+  const sortedData = useMemo(() => {
+    if (!Array.isArray(data) || data.length === 0) return [];
+    return [...data].sort(sortFunction);
+  }, [data, sortFunction]);
 
+  // Simplified sort request handler
   const requestSort = (key: keyof YieldData) => {
-    setSortConfig((prev) => {
-      const newDirection = prev.key === key && prev.direction === "asc" ? "desc" : "asc";
-      return { key, direction: newDirection };
-    });
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc"
+    }));
   };
 
   if (isLoading) {
@@ -135,9 +138,9 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedData.map((row, idx) => (
+          {sortedData.map((row) => (
             <TableRow 
-              key={`${row.protocol}-${row.chain}-${row.pool}-${idx}`}
+              key={`${row.protocol}-${row.chain}-${row.pool}-${row.tvl}`}
               className="border-b-[#9b87f5]/20 hover:bg-[#1A1F2C]/30"
             >
               <TableCell className="font-medium text-[#D6BCFA]">{row.protocol}</TableCell>
