@@ -1,20 +1,14 @@
 import { useState, useMemo } from "react";
 import { YieldTable, type YieldData } from "@/components/YieldTable";
 import { Filters } from "@/components/Filters";
-import { fetchYieldData } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useYieldData } from "@/hooks/useYieldData";
 
 const Index = () => {
   const [selectedChain, setSelectedChain] = useState("all");
   const [apyRange, setApyRange] = useState<[number, number]>([0, 100]);
   const [tvlRange, setTvlRange] = useState<[number, number]>([0, 1000000000]);
 
-  const { data: yieldData = [], isLoading } = useQuery<YieldData[]>({
-    queryKey: ["yieldData"],
-    queryFn: fetchYieldData,
-    refetchInterval: 43200000, // 12 hours
-    staleTime: 3600000, // 1 hour
-  });
+  const { data: yieldData = [], isLoading } = useYieldData();
 
   // Memoize chains array to prevent unnecessary recalculations
   const chains = useMemo(() => {
