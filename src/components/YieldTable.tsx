@@ -77,7 +77,10 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
         </TableHeader>
         <TableBody>
           {sortedData.map((row, idx) => (
-            <TableRow key={`${row.protocol}-${row.pool}-${idx}`} className="border-b-[#9b87f5]/20 hover:bg-[#1A1F2C]/30">
+            <TableRow 
+              key={`${row.protocol}-${row.chain}-${row.pool}-${idx}`} 
+              className="border-b-[#9b87f5]/20 hover:bg-[#1A1F2C]/30"
+            >
               <TableCell className="font-medium text-[#D6BCFA]">{row.protocol}</TableCell>
               <TableCell className="text-[#D6BCFA]">{row.chain}</TableCell>
               <TableCell className="text-right font-mono text-[#8B5CF6]">
@@ -88,14 +91,16 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
               </TableCell>
               <TableCell className="text-[#D6BCFA]">{row.pool}</TableCell>
               <TableCell>
-                {row.rewardTokens.map((token, i) => (
-                  <span
-                    key={token}
-                    className="inline-block bg-[#9b87f5]/10 text-[#D6BCFA] px-2 py-1 rounded-full text-sm mr-1"
-                  >
-                    {token}
-                  </span>
-                ))}
+                <div className="flex flex-wrap gap-1">
+                  {row.rewardTokens.map((token, tokenIdx) => (
+                    <span
+                      key={`${token}-${tokenIdx}`}
+                      className="inline-block bg-[#9b87f5]/10 text-[#D6BCFA] px-2 py-1 rounded-full text-sm"
+                    >
+                      {token}
+                    </span>
+                  ))}
+                </div>
               </TableCell>
             </TableRow>
           ))}
