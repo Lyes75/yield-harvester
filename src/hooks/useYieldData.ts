@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 const DEFILLAMA_API = "https://yields.llama.fi";
 const RETRY_DELAY = 5000; // 5 seconds
 const MAX_RETRIES = 3;
+const POLLING_INTERVAL = 10000; // 10 seconds
 
 export function useYieldData() {
   const queryClient = useQueryClient();
@@ -15,36 +16,77 @@ export function useYieldData() {
 
   // Set up WebSocket connection
   useEffect(() => {
-    const socket = io(DEFILLAMA_API, {
-      transports: ["websocket"],
-      reconnection: true,
-      reconnectionDelay: RETRY_DELAY,
-      reconnectionAttempts: MAX_RETRIES,
-    });
+    let retryCount = 0;
+    let socket: ReturnType<typeof io> | null = null;
 
-    socket.on("connect", () => {
-      console.log("Connected to DeFiLlama WebSocket");
-    });
+    const connectWebSocket = () => {
+      if (retryCount >= MAX_RETRIES) {
+        console.log("Max WebSocket retries reached, falling back to polling");
+        return;
+      }
 
-    socket.on("pools_update", (data) => {
-      queryClient.setQueryData(["yieldData"], data);
-      toast({
-        title: "Data Updated",
-        description: "Latest yield farming data received",
-      });
-    });
+      try {
+        socket = io(DEFILLAMA_API, {
+          transports: ["websocket"],
+          reconnection: true,
+          reconnectionDelay: RETRY_DELAY,
+          reconnectionAttempts: MAX_RETRIES,
+          timeout: 10000,
+        });
 
-    socket.on("connect_error", (error) => {
-      console.error("WebSocket connection error:", error);
-      toast({
-        variant: "destructive",
-        title: "Connection Error",
-        description: "Failed to connect to real-time updates",
-      });
-    });
+        socket.on("connect", () => {
+          console.log("Connected to DeFiLlama WebSocket");
+          retryCount = 0; // Reset retry count on successful connection
+          toast({
+            title: "Connected",
+            description: "Real-time updates enabled",
+          });
+        });
+
+        socket.on("pools_update", (data) => {
+          queryClient.setQueryData(["yieldData"], data);
+        });
+
+        socket.on("connect_error", (error) => {
+          console.warn("WebSocket connection error:", error);
+          retryCount++;
+          
+          if (retryCount >= MAX_RETRIES) {
+            toast({
+              variant: "default",
+              title: "Switching to Poll Mode",
+              description: "Using regular updates every 10 seconds",
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Connection Error",
+              description: `Retrying... (${retryCount}/${MAX_RETRIES})`,
+            });
+          }
+        });
+
+        socket.on("disconnect", () => {
+          console.log("Disconnected from DeFiLlama WebSocket");
+          if (retryCount < MAX_RETRIES) {
+            setTimeout(connectWebSocket, RETRY_DELAY);
+          }
+        });
+      } catch (error) {
+        console.error("Error initializing WebSocket:", error);
+        retryCount++;
+        if (retryCount < MAX_RETRIES) {
+          setTimeout(connectWebSocket, RETRY_DELAY);
+        }
+      }
+    };
+
+    connectWebSocket();
 
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+      }
     };
   }, [queryClient, toast]);
 
@@ -52,7 +94,7 @@ export function useYieldData() {
   return useQuery<YieldData[]>({
     queryKey: ["yieldData"],
     queryFn: fetchYieldData,
-    refetchInterval: 10000, // Fallback to polling every 10 seconds if WebSocket fails
+    refetchInterval: POLLING_INTERVAL,
     staleTime: 5000,
     retry: MAX_RETRIES,
     retryDelay: RETRY_DELAY,
