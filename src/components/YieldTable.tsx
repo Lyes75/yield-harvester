@@ -10,6 +10,15 @@ export interface YieldData {
   tvl: number;
   pool: string;
   rewardTokens: string[];
+  apyBase: number;
+  apyReward: number;
+  il7d: number;
+  volumeUsd1d: number;
+  stablecoin: boolean;
+  predictedClass: string;
+  poolMeta: string;
+  exposure: string;
+  status: string;
 }
 
 interface YieldTableProps {
@@ -63,7 +72,7 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
               className="cursor-pointer hover:bg-[#1A1F2C]/50 text-[#D6BCFA]"
               onClick={() => requestSort("protocol")}
             >
-              Protocol
+              Project
             </TableHead>
             <TableHead
               className="cursor-pointer hover:bg-[#1A1F2C]/50 text-[#D6BCFA]"
@@ -75,7 +84,19 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
               className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
               onClick={() => requestSort("apy")}
             >
-              APY
+              Total APY
+            </TableHead>
+            <TableHead
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
+              onClick={() => requestSort("apyBase")}
+            >
+              Base APY
+            </TableHead>
+            <TableHead
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
+              onClick={() => requestSort("apyReward")}
+            >
+              Reward APY
             </TableHead>
             <TableHead
               className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
@@ -83,7 +104,22 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
             >
               TVL
             </TableHead>
+            <TableHead
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
+              onClick={() => requestSort("il7d")}
+            >
+              IL 7d
+            </TableHead>
+            <TableHead
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
+              onClick={() => requestSort("volumeUsd1d")}
+            >
+              Volume 24h
+            </TableHead>
             <TableHead className="text-[#D6BCFA]">Pool</TableHead>
+            <TableHead className="text-[#D6BCFA]">Pool Meta</TableHead>
+            <TableHead className="text-[#D6BCFA]">Exposure</TableHead>
+            <TableHead className="text-[#D6BCFA]">Status</TableHead>
             <TableHead className="text-[#D6BCFA]">Reward Tokens</TableHead>
           </TableRow>
         </TableHeader>
@@ -98,10 +134,25 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
               <TableCell className="text-right font-mono text-[#8B5CF6]">
                 {formatPercent(row.apy)}
               </TableCell>
+              <TableCell className="text-right font-mono text-[#8B5CF6]">
+                {formatPercent(row.apyBase)}
+              </TableCell>
+              <TableCell className="text-right font-mono text-[#8B5CF6]">
+                {formatPercent(row.apyReward)}
+              </TableCell>
               <TableCell className="text-right font-mono text-[#9b87f5]">
                 ${formatNumber(row.tvl)}
               </TableCell>
+              <TableCell className="text-right font-mono text-[#9b87f5]">
+                {row.il7d ? formatPercent(row.il7d) : 'N/A'}
+              </TableCell>
+              <TableCell className="text-right font-mono text-[#9b87f5]">
+                ${formatNumber(row.volumeUsd1d)}
+              </TableCell>
               <TableCell className="text-[#D6BCFA]">{row.pool}</TableCell>
+              <TableCell className="text-[#D6BCFA]">{row.poolMeta || 'N/A'}</TableCell>
+              <TableCell className="text-[#D6BCFA]">{row.exposure || 'N/A'}</TableCell>
+              <TableCell className="text-[#D6BCFA]">{row.status || 'Active'}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {row.rewardTokens.map((token, tokenIdx) => (

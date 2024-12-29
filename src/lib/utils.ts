@@ -6,6 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatNumber(num: number): string {
+  if (!num) return '0';
   if (num >= 1000000000) {
     return (num / 1000000000).toFixed(1) + "B";
   }
@@ -19,6 +20,7 @@ export function formatNumber(num: number): string {
 }
 
 export function formatPercent(num: number): string {
+  if (!num) return '0%';
   return num.toFixed(2) + "%";
 }
 
@@ -33,9 +35,18 @@ export async function fetchYieldData() {
       protocol: item.project,
       chain: item.chain,
       apy: item.apy,
+      apyBase: item.apyBase || 0,
+      apyReward: item.apyReward || 0,
       tvl: item.tvlUsd,
       pool: item.symbol,
       rewardTokens: item.rewardTokens || [],
+      il7d: item.il7d || 0,
+      volumeUsd1d: item.volumeUsd1d || 0,
+      stablecoin: item.stablecoin || false,
+      predictedClass: item.predictedClass || '',
+      poolMeta: item.poolMeta || '',
+      exposure: item.exposure || '',
+      status: item.status || 'Active'
     }));
   } catch (error) {
     console.error("Error fetching yield data:", error);
