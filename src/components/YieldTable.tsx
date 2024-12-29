@@ -43,55 +43,55 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
   }
 
   return (
-    <Card className="w-full overflow-hidden">
+    <Card className="w-full overflow-hidden bg-[#2A2F3C]/50 border-[#9b87f5]/20 backdrop-blur-sm">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="border-b-[#9b87f5]/20">
             <TableHead
-              className="cursor-pointer hover:bg-gray-50"
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-[#D6BCFA]"
               onClick={() => requestSort("protocol")}
             >
               Protocol
             </TableHead>
             <TableHead
-              className="cursor-pointer hover:bg-gray-50"
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-[#D6BCFA]"
               onClick={() => requestSort("chain")}
             >
               Chain
             </TableHead>
             <TableHead
-              className="cursor-pointer hover:bg-gray-50 text-right"
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
               onClick={() => requestSort("apy")}
             >
               APY
             </TableHead>
             <TableHead
-              className="cursor-pointer hover:bg-gray-50 text-right"
+              className="cursor-pointer hover:bg-[#1A1F2C]/50 text-right text-[#D6BCFA]"
               onClick={() => requestSort("tvl")}
             >
               TVL
             </TableHead>
-            <TableHead>Pool</TableHead>
-            <TableHead>Reward Tokens</TableHead>
+            <TableHead className="text-[#D6BCFA]">Pool</TableHead>
+            <TableHead className="text-[#D6BCFA]">Reward Tokens</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedData.map((row, idx) => (
-            <TableRow key={`${row.protocol}-${row.pool}-${idx}`}>
-              <TableCell className="font-medium">{row.protocol}</TableCell>
-              <TableCell>{row.chain}</TableCell>
-              <TableCell className="text-right font-mono">
+            <TableRow key={`${row.protocol}-${row.pool}-${idx}`} className="border-b-[#9b87f5]/20 hover:bg-[#1A1F2C]/30">
+              <TableCell className="font-medium text-[#D6BCFA]">{row.protocol}</TableCell>
+              <TableCell className="text-[#D6BCFA]">{row.chain}</TableCell>
+              <TableCell className="text-right font-mono text-[#8B5CF6]">
                 {formatPercent(row.apy)}
               </TableCell>
-              <TableCell className="text-right font-mono">
+              <TableCell className="text-right font-mono text-[#9b87f5]">
                 ${formatNumber(row.tvl)}
               </TableCell>
-              <TableCell>{row.pool}</TableCell>
+              <TableCell className="text-[#D6BCFA]">{row.pool}</TableCell>
               <TableCell>
                 {row.rewardTokens.map((token, i) => (
                   <span
                     key={token}
-                    className="inline-block bg-defi-secondary/10 text-defi-secondary px-2 py-1 rounded-full text-sm mr-1"
+                    className="inline-block bg-[#9b87f5]/10 text-[#D6BCFA] px-2 py-1 rounded-full text-sm mr-1"
                   >
                     {token}
                   </span>
@@ -107,11 +107,11 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
 
 function LoadingState() {
   return (
-    <Card className="w-full p-4">
+    <Card className="w-full p-4 bg-[#2A2F3C]/50 border-[#9b87f5]/20 backdrop-blur-sm">
       <div className="space-y-3">
-        <div className="h-4 bg-gray-200 rounded animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6" />
-        <div className="h-4 bg-gray-200 rounded animate-pulse" />
+        <div className="h-4 bg-[#1A1F2C] rounded animate-pulse" />
+        <div className="h-4 bg-[#1A1F2C] rounded animate-pulse w-5/6" />
+        <div className="h-4 bg-[#1A1F2C] rounded animate-pulse" />
       </div>
     </Card>
   );

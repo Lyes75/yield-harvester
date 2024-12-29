@@ -28,13 +28,13 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A1F2C] to-[#2A2F3C] py-8 font-inter">
       <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-defi-primary mb-2">
+        <div className="mb-8 text-center">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] text-transparent bg-clip-text mb-4 animate-fade-in">
             DeFi Yield Dashboard
           </h1>
-          <p className="text-defi-muted">
+          <p className="text-[#D6BCFA] text-lg animate-fade-in delay-100">
             Explore and analyze yield farming opportunities across different chains
           </p>
         </div>
