@@ -32,9 +32,11 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
     direction: "asc" | "desc";
   }>({ key: "tvl", direction: "desc" });
 
-  // Memoize the sorting function itself to prevent recreation on every render
+  // Memoize the sorting function to prevent recreation on every render
   const sortFunction = useMemo(() => {
     return (a: YieldData, b: YieldData): number => {
+      if (!a || !b) return 0;
+      
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
@@ -57,15 +59,21 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
 
       return 0;
     };
-  }, [sortConfig.key, sortConfig.direction]);
+  }, [sortConfig]);
 
   // Memoize the sorted data using the memoized sort function
   const sortedData = useMemo(() => {
-    if (!Array.isArray(data) || data.length === 0) return [];
-    return [...data].sort(sortFunction);
+    if (!Array.isArray(data)) return [];
+    if (data.length === 0) return [];
+    
+    try {
+      return [...data].sort(sortFunction);
+    } catch (error) {
+      console.error('Sorting error:', error);
+      return data;
+    }
   }, [data, sortFunction]);
 
-  // Simplified sort request handler
   const requestSort = (key: keyof YieldData) => {
     setSortConfig((prev) => ({
       key,
@@ -138,49 +146,54 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedData.map((row) => (
-            <TableRow 
-              key={`${row.protocol}-${row.chain}-${row.pool}-${row.tvl}`}
-              className="border-b-[#9b87f5]/20 hover:bg-[#1A1F2C]/30"
-            >
-              <TableCell className="font-medium text-[#D6BCFA]">{row.protocol}</TableCell>
-              <TableCell className="text-[#D6BCFA]">{row.chain}</TableCell>
-              <TableCell className="text-right font-mono text-[#8B5CF6]">
-                {formatPercent(row.apy)}
-              </TableCell>
-              <TableCell className="text-right font-mono text-[#8B5CF6]">
-                {formatPercent(row.apyBase)}
-              </TableCell>
-              <TableCell className="text-right font-mono text-[#8B5CF6]">
-                {formatPercent(row.apyReward)}
-              </TableCell>
-              <TableCell className="text-right font-mono text-[#9b87f5]">
-                ${formatNumber(row.tvl)}
-              </TableCell>
-              <TableCell className="text-right font-mono text-[#9b87f5]">
-                {row.il7d ? formatPercent(row.il7d) : 'N/A'}
-              </TableCell>
-              <TableCell className="text-right font-mono text-[#9b87f5]">
-                ${formatNumber(row.volumeUsd1d)}
-              </TableCell>
-              <TableCell className="text-[#D6BCFA]">{row.pool}</TableCell>
-              <TableCell className="text-[#D6BCFA]">{row.poolMeta || 'N/A'}</TableCell>
-              <TableCell className="text-[#D6BCFA]">{row.exposure || 'N/A'}</TableCell>
-              <TableCell className="text-[#D6BCFA]">{row.status || 'Active'}</TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {row.rewardTokens.map((token, tokenIdx) => (
-                    <span
-                      key={`${token}-${tokenIdx}`}
-                      className="inline-block bg-[#9b87f5]/10 text-[#D6BCFA] px-2 py-1 rounded-full text-sm"
-                    >
-                      {token}
-                    </span>
-                  ))}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {sortedData.map((row, index) => {
+            // Generate a truly unique key for each row
+            const uniqueKey = `${row.protocol}-${row.chain}-${row.pool}-${row.tvl}-${index}`;
+            
+            return (
+              <TableRow 
+                key={uniqueKey}
+                className="border-b-[#9b87f5]/20 hover:bg-[#1A1F2C]/30"
+              >
+                <TableCell className="font-medium text-[#D6BCFA]">{row.protocol}</TableCell>
+                <TableCell className="text-[#D6BCFA]">{row.chain}</TableCell>
+                <TableCell className="text-right font-mono text-[#8B5CF6]">
+                  {formatPercent(row.apy)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-[#8B5CF6]">
+                  {formatPercent(row.apyBase)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-[#8B5CF6]">
+                  {formatPercent(row.apyReward)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-[#9b87f5]">
+                  ${formatNumber(row.tvl)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-[#9b87f5]">
+                  {row.il7d ? formatPercent(row.il7d) : 'N/A'}
+                </TableCell>
+                <TableCell className="text-right font-mono text-[#9b87f5]">
+                  ${formatNumber(row.volumeUsd1d)}
+                </TableCell>
+                <TableCell className="text-[#D6BCFA]">{row.pool}</TableCell>
+                <TableCell className="text-[#D6BCFA]">{row.poolMeta || 'N/A'}</TableCell>
+                <TableCell className="text-[#D6BCFA]">{row.exposure || 'N/A'}</TableCell>
+                <TableCell className="text-[#D6BCFA]">{row.status || 'Active'}</TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {row.rewardTokens.map((token, tokenIdx) => (
+                      <span
+                        key={`${token}-${tokenIdx}`}
+                        className="inline-block bg-[#9b87f5]/10 text-[#D6BCFA] px-2 py-1 rounded-full text-sm"
+                      >
+                        {token}
+                      </span>
+                    ))}
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </Card>
