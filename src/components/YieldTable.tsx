@@ -24,10 +24,22 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
   }>({ key: "tvl", direction: "desc" });
 
   const sortedData = [...data].sort((a, b) => {
-    if (sortConfig.direction === "asc") {
-      return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
-    }
-    return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+    
+    if (aValue === bValue) return 0;
+    
+    const compareResult = (() => {
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return aValue - bValue;
+      }
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return aValue.localeCompare(bValue);
+      }
+      return 0;
+    })();
+    
+    return sortConfig.direction === "asc" ? compareResult : -compareResult;
   });
 
   const requestSort = (key: keyof YieldData) => {
