@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { formatNumber, formatPercent } from "@/lib/utils";
@@ -23,24 +23,27 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
     direction: "asc" | "desc";
   }>({ key: "tvl", direction: "desc" });
 
-  const sortedData = [...data].sort((a, b) => {
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
-    
-    if (aValue === bValue) return 0;
-    
-    const compareResult = (() => {
+  const sortedData = useMemo(() => {
+    const sorted = [...data].sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+      
+      if (aValue === bValue) return 0;
+      
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return aValue - bValue;
+        return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
       }
+      
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return aValue.localeCompare(bValue);
+        return sortConfig.direction === "asc" 
+          ? aValue.localeCompare(bValue) 
+          : bValue.localeCompare(aValue);
       }
+      
       return 0;
-    })();
-    
-    return sortConfig.direction === "asc" ? compareResult : -compareResult;
-  });
+    });
+    return sorted;
+  }, [data, sortConfig.key, sortConfig.direction]);
 
   const requestSort = (key: keyof YieldData) => {
     setSortConfig({
@@ -90,7 +93,7 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
         <TableBody>
           {sortedData.map((row, idx) => (
             <TableRow 
-              key={`${row.protocol}-${row.chain}-${row.pool}-${idx}`} 
+              key={`${row.protocol}-${row.chain}-${row.pool}-${idx}`}
               className="border-b-[#9b87f5]/20 hover:bg-[#1A1F2C]/30"
             >
               <TableCell className="font-medium text-[#D6BCFA]">{row.protocol}</TableCell>
