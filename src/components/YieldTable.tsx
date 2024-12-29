@@ -33,33 +33,35 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
   }>({ key: "tvl", direction: "desc" });
 
   const sortedData = useMemo(() => {
-    const sorted = [...data].sort((a, b) => {
+    if (!data.length) return [];
+    
+    return [...data].sort((a, b) => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
-      
+
       if (aValue === bValue) return 0;
-      
+
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
-      }
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
         return sortConfig.direction === "asc" 
-          ? aValue.localeCompare(bValue) 
-          : bValue.localeCompare(aValue);
+          ? (aValue || 0) - (bValue || 0)
+          : (bValue || 0) - (aValue || 0);
       }
-      
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === "asc"
+          ? (aValue || '').localeCompare(bValue || '')
+          : (bValue || '').localeCompare(aValue || '');
+      }
+
       return 0;
     });
-    return sorted;
   }, [data, sortConfig.key, sortConfig.direction]);
 
   const requestSort = (key: keyof YieldData) => {
-    setSortConfig({
+    setSortConfig((prevConfig) => ({
       key,
-      direction:
-        sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc",
-    });
+      direction: prevConfig.key === key && prevConfig.direction === "asc" ? "desc" : "asc",
+    }));
   };
 
   if (isLoading) {
