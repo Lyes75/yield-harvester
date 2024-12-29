@@ -33,35 +33,41 @@ export function YieldTable({ data, isLoading }: YieldTableProps) {
   }>({ key: "tvl", direction: "desc" });
 
   const sortedData = useMemo(() => {
-    if (!data.length) return [];
+    if (!Array.isArray(data) || data.length === 0) return [];
     
-    return [...data].sort((a, b) => {
+    const safeSort = (a: YieldData, b: YieldData): number => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
-      if (aValue === bValue) return 0;
+      // If both values are null/undefined, consider them equal
+      if (aValue == null && bValue == null) return 0;
+      // If only one value is null/undefined, sort it last
+      if (aValue == null) return sortConfig.direction === "asc" ? 1 : -1;
+      if (bValue == null) return sortConfig.direction === "asc" ? -1 : 1;
 
+      // Handle numeric values
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortConfig.direction === "asc" 
-          ? (aValue || 0) - (bValue || 0)
-          : (bValue || 0) - (aValue || 0);
+        return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
       }
 
+      // Handle string values
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         return sortConfig.direction === "asc"
-          ? (aValue || '').localeCompare(bValue || '')
-          : (bValue || '').localeCompare(aValue || '');
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       }
 
       return 0;
-    });
+    };
+
+    return [...data].sort(safeSort);
   }, [data, sortConfig.key, sortConfig.direction]);
 
   const requestSort = (key: keyof YieldData) => {
-    setSortConfig((prevConfig) => ({
-      key,
-      direction: prevConfig.key === key && prevConfig.direction === "asc" ? "desc" : "asc",
-    }));
+    setSortConfig((prev) => {
+      const newDirection = prev.key === key && prev.direction === "asc" ? "desc" : "asc";
+      return { key, direction: newDirection };
+    });
   };
 
   if (isLoading) {
