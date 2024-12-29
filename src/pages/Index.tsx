@@ -9,7 +9,7 @@ const Index = () => {
   const [apyRange, setApyRange] = useState<[number, number]>([0, 100]);
   const [tvlRange, setTvlRange] = useState<[number, number]>([0, 1000000000]);
 
-  const { data: yieldData = [], isLoading } = useQuery({
+  const { data: yieldData = [], isLoading } = useQuery<YieldData[]>({
     queryKey: ["yieldData"],
     queryFn: fetchYieldData,
     refetchInterval: 43200000, // 12 hours
@@ -18,13 +18,13 @@ const Index = () => {
 
   // Memoize chains array to prevent unnecessary recalculations
   const chains = useMemo(() => {
-    const uniqueChains = new Set(yieldData.map((item: YieldData) => item.chain));
+    const uniqueChains = new Set(yieldData.map((item) => item.chain));
     return Array.from(uniqueChains);
   }, [yieldData]);
 
   // Memoize filtered data to prevent infinite loops
   const filteredData = useMemo(() => {
-    return (yieldData as YieldData[]).filter((item) => {
+    return yieldData.filter((item) => {
       const chainMatch = selectedChain === "all" || item.chain === selectedChain;
       const apyMatch = item.apy >= apyRange[0] && item.apy <= apyRange[1];
       const tvlMatch = item.tvl >= tvlRange[0] && item.tvl <= tvlRange[1];
